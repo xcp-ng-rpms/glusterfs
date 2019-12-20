@@ -235,7 +235,7 @@ Release:          0.1%{?prereltag:.%{prereltag}}%{?dist}
 %else
 Name:             glusterfs
 Version:          7.0
-Release:          0.0%{?dist}
+Release:          1%{?dist}
 %endif
 License:          GPLv2 or LGPLv3+
 URL:              http://docs.gluster.org/
@@ -1415,6 +1415,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 20 2019 Samuel Verschelde <stormi-xcp@ylix.fr> - 7.0-1
+- Rebuild for XCP-ng 8.1
+
 * Fri Jun 14 2019 Niels de Vos <ndevos@redhat.com>
 - always build glusterfs-cli to allow monitoring/managing from clients
 
