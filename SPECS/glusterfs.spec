@@ -226,7 +226,7 @@ Release:          0.1%{?prereltag:.%{prereltag}}%{?dist}
 %else
 Name:             glusterfs
 Version:          7.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 %endif
 License:          GPLv2 or LGPLv3+
 URL:              http://docs.gluster.org/
@@ -1406,6 +1406,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 30 2020 Samuel Verschelde <stormi-xcp@ylix.fr> - 7.3-2
+- Rebuild for XCP-ng 8.2
+
 * Thu Mar 12 2020 Samuel Verschelde <stormi-xcp@ylix.fr> - 7.3-1
 - Update to version 7.3
 
