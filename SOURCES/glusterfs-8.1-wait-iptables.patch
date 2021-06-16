@@ -1,3 +1,5 @@
+Start the glusterd service after iptables to wait for GlusterFS ports to be opened
+
 --- ./extras/systemd/glusterd.service.in.bis	2021-06-15 18:49:02.691517285 +0200
 +++ ./extras/systemd/glusterd.service.in	2021-06-15 18:50:06.556183406 +0200
 @@ -2,7 +2,7 @@
