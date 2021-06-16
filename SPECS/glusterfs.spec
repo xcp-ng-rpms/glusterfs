@@ -213,7 +213,7 @@ Release:          0.1%{?prereltag:.%{prereltag}}%{?dist}
 %else
 Name:             glusterfs
 Version:          8.1
-Release:          1%{?dist}
+Release:          2%{?dist}
 %endif
 License:          GPLv2 or LGPLv3+
 URL:              http://docs.gluster.org/
@@ -226,6 +226,9 @@ Source8:          glusterfsd.init
 %else
 Source0:          glusterfs-8.1.tar.gz
 %endif
+
+# XCP-ng patches
+Patch1000: glusterfs-8.1-wait-iptables.patch
 
 BuildRoot:        %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -795,7 +798,8 @@ GlusterFS Events
 %endif
 
 %prep
-%setup -q -n %{name}-%{version}%{?prereltag}
+%autosetup -p1 -n %{name}-%{version}%{?prereltag}
+
 %if ( ! %{_usepython3} )
 echo "fixing python shebangs..."
 for f in api events extras geo-replication libglusterfs tools xlators; do
@@ -1604,6 +1608,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 16 2021 Benjamin Reis <benjamin.reis@vates.fr> - 8.1-2
+- Add glusterfs-8.1-wait-iptables.patch
+
 * Wed Sep 09 2020 Samuel Verschelde <stormi-xcp@ylix.fr> - 8.1-1
 - Update to version 8.1
 
