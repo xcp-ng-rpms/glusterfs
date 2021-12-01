@@ -13,7 +13,7 @@
 
 # asan
 # if you wish to compile an rpm with address sanitizer...
-# rpmbuild -ta glusterfs-8.2.tar.gz --with asan
+# rpmbuild -ta glusterfs-9.4.tar.gz --with asan
 %{?_with_asan:%global _with_asan --enable-asan}
 
 %if ( 0%{?rhel} && 0%{?rhel} < 7 )
@@ -22,42 +22,52 @@
 
 # cmocka
 # if you wish to compile an rpm with cmocka unit testing...
-# rpmbuild -ta glusterfs-8.2.tar.gz --with cmocka
+# rpmbuild -ta glusterfs-9.4.tar.gz --with cmocka
 %{?_with_cmocka:%global _with_cmocka --enable-cmocka}
 
 # debug
 # if you wish to compile an rpm with debugging...
-# rpmbuild -ta glusterfs-8.2.tar.gz --with debug
+# rpmbuild -ta glusterfs-9.4.tar.gz --with debug
 %{?_with_debug:%global _with_debug --enable-debug}
 
 # epoll
 # if you wish to compile an rpm without epoll...
-# rpmbuild -ta glusterfs-8.2.tar.gz --without epoll
+# rpmbuild -ta glusterfs-9.4.tar.gz --without epoll
 %{?_without_epoll:%global _without_epoll --disable-epoll}
 
 # fusermount
 # if you wish to compile an rpm without fusermount...
-# rpmbuild -ta glusterfs-8.2.tar.gz --without fusermount
+# rpmbuild -ta glusterfs-9.4.tar.gz --without fusermount
 %{?_without_fusermount:%global _without_fusermount --disable-fusermount}
 
 # geo-rep
 # if you wish to compile an rpm without geo-replication support, compile like this...
-# rpmbuild -ta glusterfs-8.2.tar.gz --without georeplication
+# rpmbuild -ta glusterfs-9.4.tar.gz --without georeplication
 %{?_without_georeplication:%global _without_georeplication --disable-georeplication}
 
 # gnfs
 # if you wish to compile an rpm with the legacy gNFS server xlator
-# rpmbuild -ta glusterfs-8.2.tar.gz --with gnfs
+# rpmbuild -ta glusterfs-9.4.tar.gz --with gnfs
 %{?_with_gnfs:%global _with_gnfs --enable-gnfs}
 
 # ipv6default
 # if you wish to compile an rpm with IPv6 default...
-# rpmbuild -ta glusterfs-8.2.tar.gz --with ipv6default
+# rpmbuild -ta glusterfs-9.4.tar.gz --with ipv6default
 %{?_with_ipv6default:%global _with_ipv6default --with-ipv6-default}
+
+# linux-io_uring
+# If you wish to compile an rpm without linux-io_uring support...
+# rpmbuild -ta  glusterfs-9.4.tar.gz --disable-linux-io_uring
+%{?_without_linux_io_uring:%global _without_linux_io_uring --disable-linux-io_uring}
+
+# Disable linux-io_uring on unsupported distros.
+%if ( 0%{?fedora} && 0%{?fedora} <= 32 ) || ( 0%{?rhel} && 0%{?rhel} <= 7 )
+%global _without_linux_io_uring --disable-linux-io_uring
+%endif
 
 # libtirpc
 # if you wish to compile an rpm without TIRPC (i.e. use legacy glibc rpc)
-# rpmbuild -ta glusterfs-8.2.tar.gz --without libtirpc
+# rpmbuild -ta glusterfs-9.4.tar.gz --without libtirpc
 %{?_without_libtirpc:%global _without_libtirpc --without-libtirpc}
 
 # Do not use libtirpc on EL6, it does not have xdr_uint64_t() and xdr_uint32_t
@@ -69,12 +79,12 @@
 
 # ocf
 # if you wish to compile an rpm without the OCF resource agents...
-# rpmbuild -ta glusterfs-8.2.tar.gz --without ocf
+# rpmbuild -ta glusterfs-9.4.tar.gz --without ocf
 %{?_without_ocf:%global _without_ocf --without-ocf}
 
 # server
 # if you wish to build rpms without server components, compile like this
-# rpmbuild -ta glusterfs-8.2.tar.gz --without server
+# rpmbuild -ta glusterfs-9.4.tar.gz --without server
 %{?_without_server:%global _without_server --without-server}
 
 # disable server components forcefully as rhel <= 6
@@ -84,7 +94,7 @@
 
 # syslog
 # if you wish to build rpms without syslog logging, compile like this
-# rpmbuild -ta glusterfs-8.2.tar.gz --without syslog
+# rpmbuild -ta glusterfs-9.4.tar.gz --without syslog
 %{?_without_syslog:%global _without_syslog --disable-syslog}
 
 # disable syslog forcefully as rhel <= 6 doesn't have rsyslog or rsyslog-mmcount
@@ -97,7 +107,7 @@
 
 # tsan
 # if you wish to compile an rpm with thread sanitizer...
-# rpmbuild -ta glusterfs-8.2.tar.gz --with tsan
+# rpmbuild -ta glusterfs-9.4.tar.gz --with tsan
 %{?_with_tsan:%global _with_tsan --enable-tsan}
 
 %if ( 0%{?rhel} && 0%{?rhel} < 7 )
@@ -106,12 +116,18 @@
 
 # valgrind
 # if you wish to compile an rpm to run all processes under valgrind...
-# rpmbuild -ta glusterfs-8.2.tar.gz --with valgrind
+# rpmbuild -ta glusterfs-9.4.tar.gz --with valgrind
 %{?_with_valgrind:%global _with_valgrind --enable-valgrind}
 
 ##-----------------------------------------------------------------------------
 ## All %%global definitions should be placed here and keep them sorted
 ##
+
+# selinux booleans whose defalut value needs modification
+# these booleans will be consumed by "%%selinux_set_booleans" macro.
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+%global selinuxbooleans rsync_full_access=1 rsync_client=1
+%endif
 
 %if ( 0%{?fedora} ) || ( 0%{?rhel} && 0%{?rhel} > 6 )
 %global _with_systemd true
@@ -132,6 +148,7 @@
 %if 0%{?_without_server:1}
 %global _without_events --disable-events
 %global _without_georeplication --disable-georeplication
+%global _without_linux_io_uring --disable-linux-io_uring
 %global _with_gnfs %{nil}
 %global _without_ocf --without-ocf
 %endif
@@ -212,7 +229,7 @@ Version:          3.8.0
 Release:          0.1%{?prereltag:.%{prereltag}}%{?dist}
 %else
 Name:             glusterfs
-Version:          8.2
+Version:          9.4
 Release:          1%{?dist}
 %endif
 License:          GPLv2 or LGPLv3+
@@ -224,7 +241,7 @@ Source2:          glusterfsd.sysconfig
 Source7:          glusterfsd.service
 Source8:          glusterfsd.init
 %else
-Source0:          glusterfs-8.2.tar.gz
+Source0:          glusterfs-9.4.tar.gz
 %endif
 
 BuildRoot:        %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
@@ -277,9 +294,12 @@ BuildRequires:    libattr-devel
 BuildRequires:    firewalld
 %endif
 
+%if ( 0%{!?_without_linux_io_uring:1} )
+BuildRequires:    liburing-devel
+%endif
+
 Obsoletes:        %{name}-common < %{version}-%{release}
 Obsoletes:        %{name}-core < %{version}-%{release}
-Obsoletes:        %{name}-ganesha
 Obsoletes:        %{name}-rdma < %{version}-%{release}
 %if ( 0%{!?_with_gnfs:1} )
 Obsoletes:        %{name}-gnfs < %{version}-%{release}
@@ -425,6 +445,17 @@ Requires:         python%{_pythonver}-gluster = %{version}-%{release}
 
 Requires:         rsync
 Requires:         util-linux
+%if ( 0%{?rhel} && ( ( 0%{?rhel} == 8 && 0%{?rhel_minor_version} >= 3 ) || 0%{?rhel} >= 9 ) )
+Requires:         tar
+%endif
+# required for setting selinux bools
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+Requires(post):      policycoreutils-python-utils
+Requires(postun):    policycoreutils-python-utils
+Requires:            selinux-policy-targeted
+Requires(post):      selinux-policy-targeted
+BuildRequires:       selinux-policy-devel
+%endif
 
 %description geo-replication
 GlusterFS is a distributed file-system capable of scaling to several
@@ -695,6 +726,9 @@ Requires:         %{name}%{?_isa} = %{version}-%{release}
 Requires:         %{name}-cli%{?_isa} = %{version}-%{release}
 Requires:         libglusterfs0%{?_isa} = %{version}-%{release}
 Requires:         libgfchangelog0%{?_isa} = %{version}-%{release}
+%if ( 0%{?fedora} && 0%{?fedora} >= 30  || ( 0%{?rhel} && 0%{?rhel} >= 8 ) )
+Requires:         glusterfs-selinux >= 0.1.0-2
+%endif
 # some daemons (like quota) use a fuse-mount, glusterfsd is part of -fuse
 Requires:         %{name}-fuse%{?_isa} = %{version}-%{release}
 # self-heal daemon, rebalance, nfs-server etc. are actually clients
@@ -827,6 +861,7 @@ done
         %{?_without_server} \
         %{?_without_syslog} \
         %{?_with_ipv6default} \
+        %{?_without_linux_io_uring} \
         %{?_without_libtirpc}
 
 # fix hardening and remove rpath in shlibs
@@ -981,6 +1016,9 @@ exit 0
 
 %if ( 0%{!?_without_georeplication:1} )
 %post geo-replication
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+%selinux_set_booleans %{selinuxbooleans}
+%endif
 if [ $1 -ge 1 ]; then
     %systemd_postun_with_restart glusterd
 fi
@@ -1604,6 +1642,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Dec 01 2021 Gael Duperrey <gduperrey@vates.fr> - 9.4-1
+- Update to version 9.4
+
 * Tue Nov 24 2020 Samuel Verschelde <stormi-xcp@ylix.fr> - 8.2-1
 - Update to version 8.2
 
