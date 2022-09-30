@@ -230,7 +230,7 @@ Release:          0.1%{?prereltag:.%{prereltag}}%{?dist}
 %else
 Name:             glusterfs
 Version:          9.4
-Release:          1%{?dist}
+Release:          2%{?dist}
 %endif
 License:          GPLv2 or LGPLv3+
 URL:              http://docs.gluster.org/
@@ -1642,6 +1642,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep 30 2022 Samuel Verschelde <stormi-xcp@ylix.fr> - 9.4-2
+- Rebuild for XCP-ng 8.3
+
 * Wed Dec 01 2021 Gael Duperrey <gduperrey@vates.fr> - 9.4-1
 - Update to version 9.4
 
