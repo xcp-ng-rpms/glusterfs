@@ -53,6 +53,16 @@
 # rpmbuild -ta @PACKAGE_NAME@-@PACKAGE_VERSION@.tar.gz --with ipv6default
 %{?_with_ipv6default:%global _with_ipv6default --with-ipv6-default}
 
+# linux-io_uring
+# If you wish to compile an rpm without linux-io_uring support...
+# rpmbuild -ta  @PACKAGE_NAME@-@PACKAGE_VERSION@.tar.gz --disable-linux-io_uring
+%{?_without_linux_io_uring:%global _without_linux_io_uring --disable-linux-io_uring}
+
+# Disable linux-io_uring on unsupported distros.
+%if ( 0%{?fedora} && 0%{?fedora} <= 32 ) || ( 0%{?rhel} && 0%{?rhel} <= 7 )
+%global _without_linux_io_uring --disable-linux-io_uring
+%endif
+
 # libtirpc
 # if you wish to compile an rpm without TIRPC (i.e. use legacy glibc rpc)
 # rpmbuild -ta @PACKAGE_NAME@-@PACKAGE_VERSION@.tar.gz --without libtirpc
@@ -111,6 +121,12 @@
 ## All %%global definitions should be placed here and keep them sorted
 ##
 
+# selinux booleans whose defalut value needs modification
+# these booleans will be consumed by "%%selinux_set_booleans" macro.
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+%global selinuxbooleans rsync_full_access=1 rsync_client=1
+%endif
+
 %if ( 0%{?fedora} ) || ( 0%{?rhel} && 0%{?rhel} > 6 )
 %global _with_systemd true
 %endif
@@ -129,6 +145,7 @@
 %if 0%{?_without_server:1}
 %global _without_events --disable-events
 %global _without_georeplication --disable-georeplication
+%global _without_linux_io_uring --disable-linux-io_uring
 %global _with_gnfs %{nil}
 %global _without_ocf --without-ocf
 %endif
@@ -274,9 +291,12 @@ BuildRequires:    libattr-devel
 BuildRequires:    firewalld
 %endif
 
+%if ( 0%{!?_without_linux_io_uring:1} )
+BuildRequires:    liburing-devel
+%endif
+
 Obsoletes:        %{name}-common < %{version}-%{release}
 Obsoletes:        %{name}-core < %{version}-%{release}
-Obsoletes:        %{name}-ganesha
 Obsoletes:        %{name}-rdma < %{version}-%{release}
 %if ( 0%{!?_with_gnfs:1} )
 Obsoletes:        %{name}-gnfs < %{version}-%{release}
@@ -422,6 +442,17 @@ Requires:         python%{_pythonver}-gluster = %{version}-%{release}
 
 Requires:         rsync
 Requires:         util-linux
+%if ( 0%{?rhel} && ( ( 0%{?rhel} == 8 && 0%{?rhel_minor_version} >= 3 ) || 0%{?rhel} >= 9 ) )
+Requires:         tar
+%endif
+# required for setting selinux bools
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+Requires(post):      policycoreutils-python-utils
+Requires(postun):    policycoreutils-python-utils
+Requires:            selinux-policy-targeted
+Requires(post):      selinux-policy-targeted
+BuildRequires:       selinux-policy-devel
+%endif
 
 %description geo-replication
 GlusterFS is a distributed file-system capable of scaling to several
@@ -692,6 +723,9 @@ Requires:         %{name}%{?_isa} = %{version}-%{release}
 Requires:         %{name}-cli%{?_isa} = %{version}-%{release}
 Requires:         libglusterfs0%{?_isa} = %{version}-%{release}
 Requires:         libgfchangelog0%{?_isa} = %{version}-%{release}
+%if ( 0%{?fedora} && 0%{?fedora} >= 30  || ( 0%{?rhel} && 0%{?rhel} >= 8 ) )
+Requires:         glusterfs-selinux >= 0.1.0-2
+%endif
 # some daemons (like quota) use a fuse-mount, glusterfsd is part of -fuse
 Requires:         %{name}-fuse%{?_isa} = %{version}-%{release}
 # self-heal daemon, rebalance, nfs-server etc. are actually clients
@@ -824,6 +858,7 @@ done
         %{?_without_server} \
         %{?_without_syslog} \
         %{?_with_ipv6default} \
+        %{?_without_linux_io_uring} \
         %{?_without_libtirpc}
 
 # fix hardening and remove rpath in shlibs
@@ -978,6 +1013,9 @@ exit 0
 
 %if ( 0%{!?_without_georeplication:1} )
 %post geo-replication
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+%selinux_set_booleans %{selinuxbooleans}
+%endif
 if [ $1 -ge 1 ]; then
     %systemd_postun_with_restart glusterd
 fi
@@ -1601,8 +1639,20 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 29 2021 Ravishankar N <ravishankar@redhat.com>
+- add liburing-devel as a requirement.
+
+* Thu Nov 26 2020 Shwetha K Acharya <sacharya@redhat.com>
+- Add tar as dependency to georeplication rpm for RHEL version >= 8.3
+
+* Fri Nov 20 2020 Shwetha K Acharya <sacharya@redhat.com>
+- remove ganesha from Obsoletes
+
 * Thu May 14 2020 Kaleb S. KEITHLEY <kkeithle@redhat.com>
 - refactor, common practice, Issue #1126
+
+* Mon May 11 2020 Sunny Kumar <sunkumar@redhat.com>
+- added requires policycoreutils-python-utils on rhel8 for geo-replication
 
 * Wed Oct 9 2019 Kaleb S. KEITHLEY <kkeithle@redhat.com>
 - remove leftover bd xlator cruft
