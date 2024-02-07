@@ -13,7 +13,7 @@
 
 # asan
 # if you wish to compile an rpm with address sanitizer...
-# rpmbuild -ta glusterfs-9.6.tar.gz --with asan
+# rpmbuild -ta glusterfs-11.1.tar.gz --with asan
 %{?_with_asan:%global _with_asan --enable-asan}
 
 %if ( 0%{?rhel} && 0%{?rhel} < 7 )
@@ -22,42 +22,42 @@
 
 # cmocka
 # if you wish to compile an rpm with cmocka unit testing...
-# rpmbuild -ta glusterfs-9.6.tar.gz --with cmocka
+# rpmbuild -ta glusterfs-11.1.tar.gz --with cmocka
 %{?_with_cmocka:%global _with_cmocka --enable-cmocka}
 
 # debug
 # if you wish to compile an rpm with debugging...
-# rpmbuild -ta glusterfs-9.6.tar.gz --with debug
+# rpmbuild -ta glusterfs-11.1.tar.gz --with debug
 %{?_with_debug:%global _with_debug --enable-debug}
 
 # epoll
 # if you wish to compile an rpm without epoll...
-# rpmbuild -ta glusterfs-9.6.tar.gz --without epoll
+# rpmbuild -ta glusterfs-11.1.tar.gz --without epoll
 %{?_without_epoll:%global _without_epoll --disable-epoll}
 
 # fusermount
 # if you wish to compile an rpm without fusermount...
-# rpmbuild -ta glusterfs-9.6.tar.gz --without fusermount
+# rpmbuild -ta glusterfs-11.1.tar.gz --without fusermount
 %{?_without_fusermount:%global _without_fusermount --disable-fusermount}
 
 # geo-rep
 # if you wish to compile an rpm without geo-replication support, compile like this...
-# rpmbuild -ta glusterfs-9.6.tar.gz --without georeplication
+# rpmbuild -ta glusterfs-11.1.tar.gz --without georeplication
 %{?_without_georeplication:%global _without_georeplication --disable-georeplication}
 
 # gnfs
 # if you wish to compile an rpm with the legacy gNFS server xlator
-# rpmbuild -ta glusterfs-9.6.tar.gz --with gnfs
+# rpmbuild -ta glusterfs-11.1.tar.gz --with gnfs
 %{?_with_gnfs:%global _with_gnfs --enable-gnfs}
 
 # ipv6default
 # if you wish to compile an rpm with IPv6 default...
-# rpmbuild -ta glusterfs-9.6.tar.gz --with ipv6default
+# rpmbuild -ta glusterfs-11.1.tar.gz --with ipv6default
 %{?_with_ipv6default:%global _with_ipv6default --with-ipv6-default}
 
 # linux-io_uring
 # If you wish to compile an rpm without linux-io_uring support...
-# rpmbuild -ta  glusterfs-9.6.tar.gz --disable-linux-io_uring
+# rpmbuild -ta  glusterfs-11.1.tar.gz --without linux-io_uring
 %{?_without_linux_io_uring:%global _without_linux_io_uring --disable-linux-io_uring}
 
 # Disable linux-io_uring on unsupported distros.
@@ -67,8 +67,17 @@
 
 # libtirpc
 # if you wish to compile an rpm without TIRPC (i.e. use legacy glibc rpc)
-# rpmbuild -ta glusterfs-9.6.tar.gz --without libtirpc
+# rpmbuild -ta glusterfs-11.1.tar.gz --without libtirpc
 %{?_without_libtirpc:%global _without_libtirpc --without-libtirpc}
+
+# libtcmalloc
+# if you wish to compile an rpm without tcmalloc (i.e. use gluster mempool)
+# rpmbuild -ta glusterfs-11.1.tar.gz --without tcmalloc
+%{?_without_tcmalloc:%global _without_tcmalloc --without-tcmalloc}
+
+%ifnarch x86_64
+%global _without_tcmalloc --without-tcmalloc
+%endif
 
 # Do not use libtirpc on EL6, it does not have xdr_uint64_t() and xdr_uint32_t
 # Do not use libtirpc on EL7, it does not have xdr_sizeof()
@@ -79,12 +88,12 @@
 
 # ocf
 # if you wish to compile an rpm without the OCF resource agents...
-# rpmbuild -ta glusterfs-9.6.tar.gz --without ocf
+# rpmbuild -ta glusterfs-11.1.tar.gz --without ocf
 %{?_without_ocf:%global _without_ocf --without-ocf}
 
 # server
 # if you wish to build rpms without server components, compile like this
-# rpmbuild -ta glusterfs-9.6.tar.gz --without server
+# rpmbuild -ta glusterfs-11.1.tar.gz --without server
 %{?_without_server:%global _without_server --without-server}
 
 # disable server components forcefully as rhel <= 6
@@ -94,7 +103,7 @@
 
 # syslog
 # if you wish to build rpms without syslog logging, compile like this
-# rpmbuild -ta glusterfs-9.6.tar.gz --without syslog
+# rpmbuild -ta glusterfs-11.1.tar.gz --without syslog
 %{?_without_syslog:%global _without_syslog --disable-syslog}
 
 # disable syslog forcefully as rhel <= 6 doesn't have rsyslog or rsyslog-mmcount
@@ -107,7 +116,7 @@
 
 # tsan
 # if you wish to compile an rpm with thread sanitizer...
-# rpmbuild -ta glusterfs-9.6.tar.gz --with tsan
+# rpmbuild -ta glusterfs-11.1.tar.gz --with tsan
 %{?_with_tsan:%global _with_tsan --enable-tsan}
 
 %if ( 0%{?rhel} && 0%{?rhel} < 7 )
@@ -116,7 +125,7 @@
 
 # valgrind
 # if you wish to compile an rpm to run all processes under valgrind...
-# rpmbuild -ta glusterfs-9.6.tar.gz --with valgrind
+# rpmbuild -ta glusterfs-11.1.tar.gz --with valgrind
 %{?_with_valgrind:%global _with_valgrind --enable-valgrind}
 
 ##-----------------------------------------------------------------------------
@@ -218,6 +227,10 @@
 %global __provides_exclude_from ^%{_libdir}/glusterfs/%{version}/.*$
 %endif
 
+%global bashcompdir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null)
+%if "%{bashcompdir}" == ""
+%global bashcompdir ${sysconfdir}/bash_completion.d
+%endif
 
 ##-----------------------------------------------------------------------------
 ## All package definitions should be placed here in alphabetical order
@@ -229,7 +242,7 @@ Version:          3.8.0
 Release:          0.1%{?prereltag:.%{prereltag}}%{?dist}
 %else
 Name:             glusterfs
-Version:          9.6
+Version:          11.1
 Release:          1%{?dist}
 %endif
 License:          GPLv2 or LGPLv3+
@@ -241,7 +254,7 @@ Source2:          glusterfsd.sysconfig
 Source7:          glusterfsd.service
 Source8:          glusterfsd.init
 %else
-Source0:          glusterfs-9.6.tar.gz
+Source0:          glusterfs-11.1.tar.gz
 %endif
 
 BuildRoot:        %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
@@ -249,6 +262,10 @@ BuildRoot:        %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 Requires(pre):    shadow-utils
 %if ( 0%{?_with_systemd:1} )
 BuildRequires:    systemd
+%endif
+
+%if ( 0%{!?_without_tcmalloc:1} )
+Requires:         gperftools-libs%{?_isa}
 %endif
 
 Requires:         libglusterfs0%{?_isa} = %{version}-%{release}
@@ -266,9 +283,12 @@ BuildRequires:    libtsan
 BuildRequires:    bison flex
 BuildRequires:    gcc make libtool
 BuildRequires:    ncurses-devel readline-devel
-BuildRequires:    libxml2-devel openssl-devel
+BuildRequires:    libxml2-devel openssl-devel openssl
 BuildRequires:    libaio-devel libacl-devel
 BuildRequires:    python%{_pythonver}-devel
+%if ( 0%{!?_without_tcmalloc:1} )
+BuildRequires:    gperftools-devel
+%endif
 %if ( 0%{?rhel} && 0%{?rhel} < 8 )
 BuildRequires:    python-ctypes
 %endif
@@ -321,8 +341,14 @@ and client framework.
 
 %package cli
 Summary:          GlusterFS CLI
+%if ( ! (0%{?rhel} && 0%{?rhel} < 7) )
+BuildRequires:    pkgconfig(bash-completion)
+# bash-completion >= 1.90 satisfies this requirement.
+# If it is not available, the condition can be adapted
+# and the completion script will be installed in the backwards compatible
+# %{sysconfdir}/bash_completion.d
+%endif
 Requires:         libglusterfs0%{?_isa} = %{version}-%{release}
-Requires:         libglusterd0%{?_isa} = %{version}-%{release}
 
 %description cli
 GlusterFS is a distributed file-system capable of scaling to several
@@ -445,9 +471,8 @@ Requires:         python%{_pythonver}-gluster = %{version}-%{release}
 
 Requires:         rsync
 Requires:         util-linux
-%if ( 0%{?rhel} && ( ( 0%{?rhel} == 8 && 0%{?rhel_minor_version} >= 3 ) || 0%{?rhel} >= 9 ) )
 Requires:         tar
-%endif
+
 # required for setting selinux bools
 %if ( 0%{?rhel} && 0%{?rhel} >= 8 )
 Requires(post):      policycoreutils-python-utils
@@ -643,21 +668,6 @@ It borrows a powerful concept called Translators from GNU Hurd kernel.
 Much of the code in GlusterFS is in user space and easily manageable.
 
 This package provides libgfxdr.so.
-
-%package -n libglusterd0
-Summary:          GlusterFS libglusterd library
-Requires:         libglusterfs0%{?_isa} = %{version}-%{release}
-Obsoletes:        %{name}-libs <= %{version}-%{release}
-
-%description -n libglusterd0
-GlusterFS is a distributed file-system capable of scaling to several
-petabytes. It aggregates various storage bricks over TCP/IP interconnect
-into one large parallel network filesystem. GlusterFS is one of the
-most sophisticated file systems in terms of features and extensibility.
-It borrows a powerful concept called Translators from GNU Hurd kernel.
-Much of the code in GlusterFS is in user space and easily manageable.
-
-This package provides the libglusterd library
 
 %package -n python%{_pythonver}-gluster
 Summary:          GlusterFS python library
@@ -862,7 +872,8 @@ done
         %{?_without_syslog} \
         %{?_with_ipv6default} \
         %{?_without_linux_io_uring} \
-        %{?_without_libtirpc}
+        %{?_without_libtirpc} \
+        %{?_without_tcmalloc}
 
 # fix hardening and remove rpath in shlibs
 %if ( 0%{?fedora} && 0%{?fedora} > 17 ) || ( 0%{?rhel} && 0%{?rhel} > 6 )
@@ -982,10 +993,6 @@ touch %{buildroot}%{_sharedstatedir}/glusterd/nfs/run/nfs.pid
 
 find ./tests ./run-tests.sh -type f | cpio -pd %{buildroot}%{_prefix}/share/glusterfs
 
-## Install bash completion for cli
-install -p -m 0744 -D extras/command-completion/gluster.bash \
-    %{buildroot}%{_sysconfdir}/bash_completion.d/gluster
-
 %clean
 rm -rf %{buildroot}
 
@@ -1009,7 +1016,10 @@ exit 0
 %if ( 0%{!?_without_server:1} )
 %if ( 0%{?fedora} && 0%{?fedora} > 25 || ( 0%{?rhel} && 0%{?rhel} > 6 ) )
 %post ganesha
-semanage boolean -m ganesha_use_fusefs --on
+# first install
+if [ $1 -eq 1 ]; then
+  %selinux_set_booleans ganesha_use_fusefs=1
+fi
 exit 0
 %endif
 %endif
@@ -1017,7 +1027,9 @@ exit 0
 %if ( 0%{!?_without_georeplication:1} )
 %post geo-replication
 %if ( 0%{?rhel} && 0%{?rhel} >= 8 )
-%selinux_set_booleans %{selinuxbooleans}
+if [ $1 -eq 1 ]; then
+  %selinux_set_booleans %{selinuxbooleans}
+fi
 %endif
 if [ $1 -ge 1 ]; then
     %systemd_postun_with_restart glusterd
@@ -1038,9 +1050,6 @@ exit 0
 /sbin/ldconfig
 
 %post -n libgfxdr0
-/sbin/ldconfig
-
-%post -n libglusterd0
 /sbin/ldconfig
 
 %if ( 0%{!?_without_server:1} )
@@ -1189,7 +1198,20 @@ exit 0
 %if ( 0%{!?_without_server:1} )
 %if ( 0%{?fedora} && 0%{?fedora} > 25  || ( 0%{?rhel} && 0%{?rhel} > 6 ) )
 %postun ganesha
-semanage boolean -m ganesha_use_fusefs --off
+if [ $1 -eq 0 ]; then
+  # use the value of ganesha_use_fusefs from before glusterfs-ganesha was installed
+  %selinux_unset_booleans ganesha_use_fusefs=1
+fi
+exit 0
+%endif
+%endif
+
+%if ( 0%{!?_without_georeplication:1} )
+%postun geo-replication
+%if ( 0%{?rhel} && 0%{?rhel} >= 8 )
+if [ $1 -eq 0 ]; then
+  %selinux_unset_booleans %{selinuxbooleans}
+fi
 exit 0
 %endif
 %endif
@@ -1199,19 +1221,9 @@ exit 0
 ##
 %if ( 0%{!?_without_server:1} )
 %if ( 0%{?fedora} && 0%{?fedora} > 25  || ( 0%{?rhel} && 0%{?rhel} > 6 ) )
-%trigger ganesha -- selinux-policy-targeted
-semanage boolean -m ganesha_use_fusefs --on
-exit 0
-%endif
-%endif
-
-##-----------------------------------------------------------------------------
-## All %%triggerun should be placed here and keep them sorted
-##
-%if ( 0%{!?_without_server:1} )
-%if ( 0%{?fedora} && 0%{?fedora} > 25  || ( 0%{?rhel} && 0%{?rhel} > 6 ) )
-%triggerun ganesha -- selinux-policy-targeted
-semanage boolean -m ganesha_use_fusefs --off
+# ensure ganesha_use_fusefs is on in case of policy mode switch (eg. mls->targeted)
+%triggerin ganesha -- selinux-policy-targeted
+semanage boolean -m ganesha_use_fusefs --on -S targeted
 exit 0
 %endif
 %endif
@@ -1275,7 +1287,7 @@ exit 0
 %dir %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/system
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/system/posix-acl.so
 %dir %attr(0775,gluster,gluster) %{_rundir}/gluster
-%if 0%{?_tmpfilesdir:1} && 0%{!?_without_server:1}
+%if 0%{?_tmpfilesdir:1}
 %{_tmpfilesdir}/gluster.conf
 %endif
 
@@ -1289,7 +1301,7 @@ exit 0
 %files cli
 %{_sbindir}/gluster
 %{_mandir}/man8/gluster.8*
-%{_sysconfdir}/bash_completion.d/gluster
+%{bashcompdir}/gluster.bash
 
 %files cloudsync-plugins
 %dir %{_libdir}/glusterfs/%{version}%{?prereltag}/cloudsync-plugins
@@ -1386,7 +1398,7 @@ exit 0
      %{_libexecdir}/glusterfs/python/syncdaemon/*
 %dir %{_libexecdir}/glusterfs/scripts
      %{_libexecdir}/glusterfs/scripts/get-gfid.sh
-     %{_libexecdir}/glusterfs/scripts/slave-upgrade.sh
+     %{_libexecdir}/glusterfs/scripts/secondary-upgrade.sh
      %{_libexecdir}/glusterfs/scripts/gsync-upgrade.sh
      %{_libexecdir}/glusterfs/scripts/generate-gfid-file.sh
      %{_libexecdir}/glusterfs/scripts/gsync-sync-gfid
@@ -1425,10 +1437,6 @@ exit 0
 
 %files -n libgfxdr0
 %{_libdir}/libgfxdr.so.*
-
-%files -n libglusterd0
-%{_libdir}/libglusterd.so.*
-%exclude %{_libdir}/libglusterd.so
 
 %files -n python%{_pythonver}-gluster
 # introducing glusterfs module in site packages.
@@ -1519,6 +1527,7 @@ exit 0
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/posix*
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/snapview-server.so
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/marker.so
+     %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/simple-quota.so
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/quota*
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/selinux.so
      %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/trash.so
@@ -1642,6 +1651,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 06 2024 Yann Dirson <yann.dirson@vates.tech> - 11.1-1
+- Update to version 11.1
+
 * Fri Feb 02 2023 Yann Dirson <yann.dirson@vates.tech> - 9.6-1
 - Update to version 9.6
 - Force using python3 on 8.3
